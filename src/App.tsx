@@ -78,7 +78,7 @@ function App() {
             path="/create-study" 
             element={
               isAuthenticated ? 
-                <StudyCreatePage onSave={handleSave} currentUser={user!}/> : 
+                <StudyCreatePage /> : 
                 <Navigate to="/" />
             } 
           />
@@ -86,7 +86,7 @@ function App() {
             path="/edit-study/:id" 
             element={
               isAuthenticated ? 
-                <StudyEditForm studies={studies} onSave={handleSave} currentUser={user!}/> : 
+                <StudyEditForm onSave={handleSave} currentUser={user!}/> : 
                 <Navigate to="/" />
             } 
           />
@@ -94,7 +94,7 @@ function App() {
             path="/study/:id" 
             element={
               isAuthenticated ? 
-                <StudyDetailPage studies={studies} onUpdate={handleUpdate} onDelete={handleDelete} /> : 
+                <StudyDetailPage /> : 
                 <Navigate to="/" />
             } 
           />

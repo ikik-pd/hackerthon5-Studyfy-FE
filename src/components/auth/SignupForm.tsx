@@ -4,13 +4,14 @@ import { useThemeStore } from "../../store/themeStore";
 import { useAuthStore } from "../../store/authStore";
 import { ThemeToggle } from "../common/ThemeToggle";
 import { signup } from "../../api/auth";
+import { MemberDto } from "../../types";
 
 export function SignupForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [gender, setGender] = useState<"M" | "F">("");
+  const [gender, setGender] = useState<"M" | "F" | "">("");
   const [errors, setErrors] = useState<{[key:string]: string}>({});
   const [submitted, setSubmitted] = useState(false);
   const isDark = useThemeStore((state: { isDark: boolean }) => state.isDark);
@@ -31,19 +32,17 @@ export function SignupForm() {
     
     if (Object.keys(errs).length === 0) {
       try {
-        const signupData = {
-          user_name: name.trim(),
+        const signupData: MemberDto = {
+          id: email.trim(),
+          userName: name.trim(),
           password: password.trim(),
           email: email.trim(),
-          gender
+          gender: gender as 'M' | 'F'
         };
-        // console.log('회원가입 요청 데이터:', signupData);
         
         const response = await signup(signupData);
-        // console.log('회원가입 응답:', response);
         
         if (response.password) {
-          // 회원가입 성공 시 사용자 정보와 토큰을 저장
           login({
             id: response.id,
             name: response.userName,

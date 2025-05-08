@@ -108,7 +108,8 @@ export function StudyEditForm({ onSave, currentUser }: StudyEditFormProps) {
     try {
       if (id) {
         // 수정
-        const updateData = {
+        const updateData: StudyCreateDto = {
+          creatorId: form.creatorId,
           categoryId: form.categoryId,
           title: form.title,
           goal: form.goal,

@@ -5,7 +5,7 @@ import { ThemeToggle } from "../common/ThemeToggle";
 import { useThemeStore } from "../../store/themeStore";
 import Avatar from 'react-avatar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getStudies, deleteStudy, StudyResponseDto } from "../../api/study";
+import { getStudies, deleteStudy } from "../../api/study";
 import { QUERY_KEYS } from "../../constants/queryKeys";
 import { useAuthStore } from '../../store/authStore'
 

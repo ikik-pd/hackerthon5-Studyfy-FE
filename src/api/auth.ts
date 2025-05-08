@@ -1,4 +1,4 @@
-import { SignupRequest, SignupResponse, LoginRequest, LoginResponse } from '../types'
+import { SignupRequest, SignupResponse, LoginRequest, LoginResponse, MemberDto } from '../types'
 
 const API_BASE_URL = 'http://localhost:8080'
 
@@ -64,9 +64,8 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 }
 
 // 회원가입 API
-export async function signup(data: SignupRequest): Promise<SignupResponse> {
+export async function signup(data: MemberDto): Promise<SignupResponse> {
   try {
-    console.log('회원가입 요청 데이터:', data)
     
     const response = await fetch(`${API_BASE_URL}/api/v1/member/sign`, {
       method: 'POST',

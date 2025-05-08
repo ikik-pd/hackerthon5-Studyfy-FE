@@ -16,6 +16,14 @@ export interface SignupResponse {
   deleteStatus: boolean
 }
 
+export interface MemberDto {
+  id: string
+  userName: string
+  password: string
+  email: string
+  gender: 'M' | 'F' | ''
+}
+
 export interface LoginRequest {
   email: string
   password: string
