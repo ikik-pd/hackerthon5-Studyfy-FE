@@ -10,7 +10,7 @@ export function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [gender, setGender] = useState<"M" | "F">("M");
+  const [gender, setGender] = useState<"M" | "F">("");
   const [errors, setErrors] = useState<{[key:string]: string}>({});
   const [submitted, setSubmitted] = useState(false);
   const isDark = useThemeStore((state: { isDark: boolean }) => state.isDark);
@@ -160,6 +160,15 @@ export function SignupForm() {
               >
                 회원가입
               </button>
+              <div className="my-2 text-center">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">이미 회원이신가요? </span>
+                <a
+                  href="/login"
+                  className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline ml-1"
+                >
+                  로그인
+                </a>
+              </div>
             </form>
           )}
         </div>

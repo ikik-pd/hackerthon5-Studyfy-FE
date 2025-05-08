@@ -1,7 +1,13 @@
-import { StudyCreateDto, StudyUpdateDto, StudyResponseDto } from '../types'
-import { getAuthHeader } from './auth'
+import { StudyCreateDto, StudyResponseDto, ApplicationResponseDto } from '../types'
+import { getAuthHeader, removeToken } from './auth'
 
 const API_BASE_URL = 'http://localhost:8080'
+
+// 401 에러 처리
+function handleUnauthorized() {
+  removeToken()
+  window.location.href = '/'
+}
 
 // 스터디 목록 조회
 export async function getStudies(): Promise<StudyResponseDto[]> {
@@ -61,7 +67,7 @@ export async function createStudy(study: StudyCreateDto): Promise<StudyResponseD
 }
 
 // 스터디 수정
-export async function updateStudy(id: string, study: StudyUpdateDto): Promise<StudyResponseDto> {
+export async function updateStudy(id: string, study: StudyCreateDto): Promise<StudyResponseDto> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/studies/${id}`, {
       method: 'PUT',
@@ -90,9 +96,16 @@ export async function deleteStudy(id: string): Promise<void> {
         ...getAuthHeader()
       }
     })
+    
+    if (response.status === 401) {
+      handleUnauthorized()
+      throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.')
+    }
+    
     if (!response.ok) {
-      throw new Error('스터디 삭제에 실패했습니다.')
-    } 
+      const errorData = await response.json().catch(() => null)
+      throw new Error(errorData?.message || '스터디 삭제에 실패했습니다.')
+    }
   } catch (error) {
     console.error('스터디 삭제 에러:', error)
     throw error
@@ -100,18 +113,31 @@ export async function deleteStudy(id: string): Promise<void> {
 }
 
 // 스터디 참가
-export async function joinStudy(id: string, participantId: string): Promise<StudyResponseDto> {
+export async function joinStudy(studyId: string, applicantId: number): Promise<ApplicationResponseDto> {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...getAuthHeader()
+  }
+  if (typeof (headers as any).Authorization !== 'string') {
+    throw new Error('로그인이 필요합니다. 다시 로그인 해주세요.')
+  }
+  const body = JSON.stringify({
+    studyId: Number(studyId),
+    applicantId: Number(applicantId),
+    status: 'APPROVED'
+  })
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/studies/${id}/join`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/applications/study/${studyId}/apply`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeader()
-      },
-      body: JSON.stringify({ participantId }),
+      headers,
+      body
     })
+    if (response.status === 401) {
+      throw new Error('로그인이 만료되었습니다. 다시 로그인 해주세요.')
+    }
     if (!response.ok) {
-      throw new Error('스터디 참가에 실패했습니다.')
+      const errorData = await response.json().catch(() => null)
+      throw new Error(errorData?.message || '스터디 참가에 실패했습니다.')
     }
     return await response.json()
   } catch (error) {

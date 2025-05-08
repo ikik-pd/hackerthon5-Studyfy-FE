@@ -23,7 +23,10 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string
+  id: number
+  userName: string
   email: string
+  gender: 'M' | 'F'
 }
 
 export interface User {

@@ -6,6 +6,8 @@ import { useThemeStore } from "../../store/themeStore";
 import Avatar from 'react-avatar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getStudies, deleteStudy, StudyResponseDto } from "../../api/study";
+import { QUERY_KEYS } from "../../constants/queryKeys";
+import { useAuthStore } from '../../store/authStore'
 
 interface StudyListPageProps {
   onDelete: (id: string) => void;
@@ -19,20 +21,26 @@ export function StudyListPage({ onDelete }: StudyListPageProps) {
   const navigate = useNavigate();
   const isDark = useThemeStore((state: { isDark: boolean }) => state.isDark);
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user)
 
   // 스터디 목록 조회
   const { data: studies = [], isLoading, error } = useQuery({
-    queryKey: ['studies'],
-    queryFn: getStudies
+    queryKey: [QUERY_KEYS.STUDIES],
+    queryFn: getStudies,
+    staleTime: 1000 * 60 * 5, // 5분
+    gcTime: 1000 * 60 * 30, // 30분
   });
 
-  console.log({studies});
 
   // 스터디 삭제 뮤테이션
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteStudy(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['studies'] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.STUDIES] })
+    },
+    onError: (error: Error) => {
+      console.error('스터디 삭제 실패:', error)
+      alert(error.message)
     }
   });
 
@@ -105,37 +113,45 @@ export function StudyListPage({ onDelete }: StudyListPageProps) {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <div className="flex flex-wrap gap-1 mt-1 items-center">
-            <span className="text-xs text-zinc-400 mr-1">카테고리:</span>
-            {CATEGORY_OPTIONS.map(c => (
+          {/* 카테고리 태그: 가로 스크롤, shadow */}
+          <div className="-mx-2 px-2 overflow-x-auto scrollbar-none relative">
+            <div className="flex flex-nowrap gap-2 items-center min-w-0">
+              <span className="text-xs text-zinc-400 mr-1 shrink-0 bg-white dark:bg-zinc-900 z-10 relative">카테고리:</span>
+              {CATEGORY_OPTIONS.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCategory(selectedCategory === c.id ? null : c.id)}
+                  className={`px-3 py-1 rounded-full border text-xs font-medium transition whitespace-nowrap shrink-0 ${selectedCategory === c.id ? "bg-black dark:bg-zinc-100 text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"}`}
+                >
+                  {c.name}
+                </button>
+              ))}
               <button
-                key={c.id}
-                onClick={() => setSelectedCategory(selectedCategory === c.id ? null : c.id)}
-                className={`px-3 py-1 rounded-full border text-xs font-medium transition ${selectedCategory === c.id ? "bg-black dark:bg-zinc-100 text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"}`}
-              >
-                {c.name}
-              </button>
-            ))}
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`px-2 py-1 rounded-full border text-xs font-medium transition ${!selectedCategory ? "border-black dark:border-zinc-50 text-black dark:text-zinc-50" : "border-zinc-100 dark:border-zinc-700 text-zinc-400"}`}
-            >모두</button>
+                onClick={() => setSelectedCategory(null)}
+                className={`px-2 py-1 rounded-full border text-xs font-medium transition whitespace-nowrap shrink-0 ${!selectedCategory ? "border-black dark:border-zinc-50 text-black dark:text-zinc-50" : "border-zinc-100 dark:border-zinc-700 text-zinc-400"}`}
+              >모두</button>
+            </div>
+            {/* 오른쪽 shadow 효과: 항상 고정 */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-8 z-20 bg-gradient-to-l from-white dark:from-zinc-900 to-transparent" />
           </div>
-          <div className="flex gap-1 mt-1 items-center">
-            <span className="text-xs text-zinc-400 mr-1">방식:</span>
-            {METHOD_OPTIONS.map(m => (
+          {/* 방식 태그: 가로 스크롤 */}
+          <div className="-mx-2 px-2 overflow-x-auto scrollbar-none">
+            <div className="flex flex-nowrap gap-1 items-center">
+              <span className="text-xs text-zinc-400 mr-1 shrink-0">방식:</span>
+              {METHOD_OPTIONS.map(m => (
+                <button
+                  key={m}
+                  onClick={() => setSelectedMethod(selectedMethod === m ? "" : m)}
+                  className={`px-3 py-1 rounded-full border text-xs font-medium transition ${selectedMethod === m ? "bg-black dark:bg-zinc-100 text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"}`}
+                >
+                  {m}
+                </button>
+              ))}
               <button
-                key={m}
-                onClick={() => setSelectedMethod(selectedMethod === m ? "" : m)}
-                className={`px-3 py-1 rounded-full border text-xs font-medium transition ${selectedMethod === m ? "bg-black dark:bg-zinc-100 text-white dark:text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"}`}
-              >
-                {m}
-              </button>
-            ))}
-            <button
-              onClick={() => setSelectedMethod("")}
-              className={`px-2 py-1 rounded-full border text-xs font-medium transition ${!selectedMethod ? "border-black dark:border-zinc-50 text-black dark:text-zinc-50" : "border-zinc-100 dark:border-zinc-700 text-zinc-400"}`}
-            >모두</button>
+                onClick={() => setSelectedMethod("")}
+                className={`px-2 py-1 rounded-full border text-xs font-medium transition ${!selectedMethod ? "border-black dark:border-zinc-50 text-black dark:text-zinc-50" : "border-zinc-100 dark:border-zinc-700 text-zinc-400"}`}
+              >모두</button>
+            </div>
           </div>
           <div className="flex gap-2 mt-2 items-center">
             <span className="text-xs text-zinc-400 dark:text-zinc-500 mr-1">정렬:</span>
@@ -161,25 +177,27 @@ export function StudyListPage({ onDelete }: StudyListPageProps) {
                 className={
                   `relative bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow flex flex-col gap-2 transition group `
                   + (isSuccess
-                      ? ' bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 opacity-60 hover:opacity-60 pointer-events-none cursor-default'
+                      ? ' bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 opacity-60'
                       : ' hover:shadow-md cursor-pointer')
                 }
-                onClick={isSuccess ? undefined : (e => {
+                onClick={e => {
                   if ((e.target as HTMLElement).closest('a,button')) return;
                   navigate(`/study/${study.id}`);
-                })}
-                tabIndex={isSuccess ? -1 : 0}
-                onKeyDown={isSuccess ? undefined : (e => {
+                }}
+                tabIndex={0}
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     navigate(`/study/${study.id}`);
                   }
-                })}
+                }}
                 aria-label={`${study.title} 상세로 이동`}
               >
                 {/* 성공 뱃지 */}
                 {isSuccess && (
-                  <span className="absolute top-4 right-5 flex items-center gap-1 bg-green-500 text-white text-xs px-3 py-1 rounded-full font-semibold drop-shadow min-w-[54px] justify-center z-10">
-                    ✅ 성공
+                  <span className="absolute top-4 right-5 flex items-center gap-1 bg-white/90 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-700 text-pink-500 text-base px-3 py-1 rounded-full font-semibold  min-w-[54px] justify-center z-10">
+                    <span className="text-xl">🎉</span>
+                    <span className="text-xs font-bold ml-1">성공</span>
+                    <span className="hidden md:inline text-[10px] text-zinc-500 ml-2">상세에서 꽃가루가 1분간 날려요!</span>
                   </span>
                 )}
                 <div className="flex items-center gap-2 mb-1">
@@ -211,16 +229,28 @@ export function StudyListPage({ onDelete }: StudyListPageProps) {
                       )}
                     </div>
                     <span className="text-xs text-zinc-500 dark:text-zinc-300">{study.participants?.length || 0}/{study.maxParticipants}</span>
-                    <Link to={`/edit-study/${study.id}`} className="text-xs px-2 py-1 rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-100 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition" onClick={e=>e.stopPropagation()}>수정</Link>
-                    <button 
-                      onClick={e=>{
-                        e.stopPropagation()
-                        deleteMutation.mutate(study.id.toString())
-                      }} 
-                      className="text-xs px-2 py-1 rounded-xl bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-700 transition"
-                    >
-                      삭제
-                    </button>
+                    {/* 수정/삭제 버튼: 본인 글만 노출 */}
+                    {user?.id === study.creatorId && (
+                      <>
+                        <Link to={`/edit-study/${study.id}`} className="text-xs px-2 py-1 rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-100 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition" onClick={e=>e.stopPropagation()}>수정</Link>
+                        <button 
+                          onClick={e => {
+                            e.stopPropagation()
+                            if (window.confirm('정말로 이 스터디를 삭제하시겠습니까?')) {
+                              deleteMutation.mutate(study.id.toString())
+                            }
+                          }} 
+                          disabled={deleteMutation.isPending}
+                          className={`text-xs px-2 py-1 rounded-xl ${
+                            deleteMutation.isPending 
+                              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
+                              : 'bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-700'
+                          } transition`}
+                        >
+                          {deleteMutation.isPending ? '삭제 중...' : '삭제'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
                 {/* 진행률 바 */}
@@ -232,8 +262,9 @@ export function StudyListPage({ onDelete }: StudyListPageProps) {
                     </span>
                   </div>
                   <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl overflow-hidden">
-                    <div className="h-2 bg-blue-500 rounded-xl transition-all" style={{
-                      width: `${progress}%`
+                    <div className="h-2 rounded-xl transition-all" style={{
+                      width: `${progress}%`,
+                      backgroundColor: '#FF1744'
                     }}></div>
                   </div>
                 </div>

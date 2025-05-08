@@ -22,9 +22,12 @@ export interface Study {
 }
 
 export const CATEGORY_OPTIONS = [
-  { id: 1, name: '프론트엔드' },
-  { id: 2, name: '알고리즘' },
-  { id: 3, name: '영어' },
+  { id: 1, name: '백엔드' },
+  { id: 2, name: 'CS' },
+  { id: 3, name: '알고리즘' },
+  { id: 4, name: '면접' },
+  { id: 5, name: '자격증' },
+  { id: 6, name: '영어' },
 ];
 
 export const METHOD_OPTIONS = ['온라인', '오프라인', '혼합']; 

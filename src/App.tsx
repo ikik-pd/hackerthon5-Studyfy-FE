@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Study, CATEGORY_OPTIONS, METHOD_OPTIONS } from "./components/common/types";
 import { SignupForm } from "./components/auth/SignupForm";
+import { LoginForm } from "./components/auth/LoginForm";
 import { StudyListPage } from "./components/study/StudyListPage";
 import { StudyDetailPage } from "./components/study/StudyDetailPage";
 import { StudyEditForm } from "./components/study/StudyEditForm";
@@ -64,6 +65,7 @@ function App() {
     <Routes>
       <Route path="/" element={<SignupForm />} />
       <Route path="/signup" element={<SignupForm />} />
+      <Route path="/login" element={<LoginForm />} />
           <Route 
             path="/studies" 
             element={
